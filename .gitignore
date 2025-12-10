@@ -1,0 +1,31 @@
+# ----------------------------------------------------------------------
+# AUTOSTASH .gitignore
+# ----------------------------------------------------------------------
+
+autostash
+
+*.o
+
+backups/
+
+*.d
+*.obj
+*.exe
+*.out
+*.a
+*.lib
+
+
+*~
+*.swp
+.netrwhist
+
+
+.#*
+
+# Visual Studio Code
+.vscode/
+
+# Build configuration files (if using CMake/Autotools later)
+/build/
+/bin/
