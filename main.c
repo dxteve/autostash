@@ -17,16 +17,21 @@ int log_fd = -1;
 
 int main() {
     pthread_mutex_init(&lock, NULL);
+    
+    // Change to Home directory
+    const char *home = getenv("HOME");
+    if (home) chdir(home);
+
+    // Setup environment
     mkdir("backups", 0755);
     mkfifo(PIPE_PATH, 0666);
-
-    ensure_log_terminal(); // Initial terminal start
+    ensure_log_terminal();
 
     pthread_t sched_thread;
     int choice;
 
     while (1) {
-        show_menu();
+        show_menu(); // This will now correctly call the one in ui.c
         if (scanf("%d", &choice) != 1) {
             while(getchar() != '\n');
             continue;
@@ -37,35 +42,34 @@ int main() {
                 if (!backup_running) {
                     backup_running = 1;
                     pthread_create(&sched_thread, NULL, scheduler, NULL);
-                    printf(WHITE "Backup cycle started. " YELLOW "(See secondary terminal for detailed information)\n" RESET);
-                    ui_log(BLUE, ">>> USER COMMAND: Start Backup <<<\n");
+                    printf("\033[37mBackup started. \033[33m(Check log terminal)\033[0m\n");
                 }
                 break;
             case 2: add_folder(); break;
             case 3: remove_folder(); break;
-            case 4: 
-                show_settings();
-                printf(WHITE "Settings displayed. " YELLOW "(See secondary terminal for task logs)\n" RESET);
-                break;
+            case 4: show_settings(); break;
             case 5:
                 printf("New interval: ");
                 scanf("%d", &backup_interval);
-                printf(WHITE "Interval updated. " YELLOW "(See secondary terminal for confirmation)\n" RESET);
-                ui_log(YELLOW, "[CONFIG] Interval changed to %d seconds\n", backup_interval);
                 break;
             case 6:
                 backup_running = 0;
-                printf(RED "Exiting application...\n" RESET);
                 close(log_fd);
                 unlink(PIPE_PATH);
                 exit(0);
             case 7:
                 if (backup_running) {
                     backup_running = 0;
-                    printf(WHITE "Stopping backup process... " YELLOW "(See secondary terminal for status)\n" RESET);
-                    ui_log(RED, ">>> USER COMMAND: Stop Backup <<<\n");
+                    printf("\033[37mStopping backup process...\033[0m\n");
                 }
+                break;
+            case 8:
+                change_directory();
+                break;
+            default:
+                printf("\033[31mInvalid choice.\033[0m\n");
                 break;
         }
     }
+    return 0;
 }

@@ -2,10 +2,12 @@
 #define CONFIG_H
 
 #include <pthread.h>
+#include <fcntl.h>
 
 /* ---------- CONFIG ---------- */
 #define MAX_FOLDERS 10
 #define MAX_PATH 256
+#define PAGE_SIZE 10 // Number of folders to show per page
 #define PIPE_PATH "/tmp/autostash_log"
 
 #define BLUE    "\033[34m"
@@ -13,6 +15,7 @@
 #define YELLOW  "\033[33m"
 #define GREEN   "\033[32m"
 #define WHITE   "\033[37m"
+#define ORANGE  "\033[38;5;208m" // Extended 256-color ANSI
 #define RESET   "\033[0m"
 
 /* ---------- GLOBALS ---------- */
