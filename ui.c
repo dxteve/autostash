@@ -32,15 +32,16 @@ void show_menu() {
     char cwd[MAX_PATH];
     getcwd(cwd, sizeof(cwd));
     printf(BLUE "\n========= AUTOSTASH =========\n" RESET);
-    printf("Current Dir: " WHITE "%s\n" RESET, cwd);
-    printf("1. Start Backup Cycle\n");
+    printf(WHITE "Location: " GREEN "%s\n" RESET, cwd);
+    printf("1. Start Background Backup Cycle\n");
     printf("2. Add Folder to Backup\n");
     printf("3. Remove Folder\n");
     printf("4. Show Settings\n");
     printf("5. Change Interval\n");
-    printf("6. Exit Application\n");
     printf("7. Stop Background Backup\n");
-    printf("8. Change Current Directory\n"); // New Option
+    printf("8. Change Current Directory\n");
+    printf("9. Backup Only Once (One-Time)\n");
+    printf("0. Exit Application\n");
     printf("-----------------------------\n");
     printf("Choice: ");
     fflush(stdout);
