@@ -43,6 +43,7 @@ void run_backup_cycle() {
     int current_count = folder_count;
     
     if (current_count > 0) {
+        play_sound(1);
         ui_log(BLUE, "=== Backup Cycle Started: %s ===\n", timestamp);
         
         char cycle_dir[MAX_PATH];
@@ -64,6 +65,7 @@ void run_backup_cycle() {
             pthread_join(threads[i], NULL);
 
         ui_log(GREEN, "=== Backup Cycle Completed ===\n");
+        play_sound(2);
     } else {
         pthread_mutex_unlock(&lock);
         ui_log(RED, "[!] No folders in list. Add folders before backing up.\n");
@@ -76,6 +78,7 @@ void *scheduler(void *arg) {
         
         // Break sleep into 1-second increments to remain responsive to the 'Stop' command (Choice 7)
         ui_log(YELLOW, "[IDLE] Waiting %d seconds for next cycle...\n", backup_interval);
+        play_sound(3);
         for (int s = 0; s < backup_interval && backup_running; s++) {
             sleep(1);
         }

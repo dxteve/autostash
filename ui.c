@@ -11,20 +11,31 @@
 #include "ui.h"
 
 void ensure_log_terminal() {
-    // Attempt to open the pipe in non-blocking mode to check for a reader
     int test_fd = open(PIPE_PATH, O_WRONLY | O_NONBLOCK);
-    
     if (test_fd == -1 && errno == ENXIO) {
-        // ENXIO means no process has the pipe open for reading (terminal closed)
-        system("gnome-terminal -- bash -c \"echo '--- AUTOSTASH LOG WINDOW ---'; cat " PIPE_PATH "; read\" &");
-        
-        // Give the terminal a moment to start and open the pipe
+        // We add an 'exec' command so that when the pipe closes or 'cat' finishes, the terminal window can close
+        system("gnome-terminal -- bash -c \"echo '--- AUTOSTASH LOG WINDOW ---'; cat " PIPE_PATH "; echo 'SHUTTING DOWN...'; sleep 2\" &");
         sleep(1);
-        
         if (log_fd != -1) close(log_fd);
         log_fd = open(PIPE_PATH, O_WRONLY);
     } else if (test_fd != -1) {
-        close(test_fd); // Reader exists, everything is fine
+        close(test_fd);
+    }
+}
+
+void play_sound(int type) {
+    // We use 'paplay' to play standard Ubuntu system sounds
+    // These are located in /usr/share/sounds/freedesktop/stereo/
+    switch(type) {
+        case 1: // Start - a clean "dialog-information" sound
+            system("paplay /usr/share/sounds/freedesktop/stereo/message-new-instant.oga &");
+            break; 
+        case 2: // Finish - a "complete" sounding tone
+            system("paplay /usr/share/sounds/freedesktop/stereo/complete.oga &");
+            break; 
+        case 3: // Interval - a subtle "click" or "pop"
+            system("paplay /usr/share/sounds/freedesktop/stereo/message-new-instant.oga &");
+            break;
     }
 }
 

@@ -85,15 +85,19 @@ int main() {
                     printf(GREEN "One-time backup completed.\n" RESET);
                 }
                 break;
-            case 0: // Updated Exit key
+            case 0:
                 backup_running = 0;
                 printf(RED "Exiting application. Cleaning up...\n" RESET);
-                if (log_fd != -1) close(log_fd);
+                
+                // Inform the secondary terminal
+                if (log_fd != -1) {
+                    ui_log(RED, "\n!!! APPLICATION EXITING !!!\n");
+                    sleep(1); // Give time for the message to display
+                    close(log_fd);
+                }
+                
                 unlink(PIPE_PATH);
                 exit(0);
-            default:
-                printf(RED "Invalid choice. Please try again.\n" RESET);
-                break;
         }
     }
     return 0;
