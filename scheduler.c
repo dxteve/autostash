@@ -10,23 +10,17 @@
 
 void *backup_thread(void *arg) {
     BackupTask *task = (BackupTask *)arg;
+    char zip_path[MAX_PATH + 10];
+    snprintf(zip_path, sizeof(zip_path), "%s.zip", task->dest);
 
     if (task->type == ITEM_FOLDER) {
-        // Compress folder
-        char zip_path[MAX_PATH + 10];
-        snprintf(zip_path, sizeof(zip_path), "%s.zip", task->dest);
-        
         ui_log(BLUE, "[ZIPPING] Compressing folder: %s\n", task->source);
         compress_folder(task->source, zip_path);
         ui_log(GREEN, "[SUCCESS] Created: %s.zip\n", task->source);
     } else {
-        // Copy file
-        char dest_file[MAX_PATH + 10];
-        snprintf(dest_file, sizeof(dest_file), "%s", task->dest);
-        
-        ui_log(BLUE, "[COPYING] Copying file: %s\n", task->source);
-        copy_file(task->source, dest_file);
-        ui_log(GREEN, "[SUCCESS] Copied: %s\n", task->source);
+        ui_log(BLUE, "[ZIPPING] Compressing file: %s\n", task->source);
+        compress_file(task->source, zip_path);
+        ui_log(GREEN, "[SUCCESS] Created: %s.zip\n", task->source);
     }
     
     return NULL;
@@ -61,12 +55,8 @@ void run_backup_cycle() {
             strncpy(tasks[i].source, items[i], MAX_PATH);
             tasks[i].type = item_types[i];
             
-            if (tasks[i].type == ITEM_FOLDER) {
-                snprintf(tasks[i].dest, MAX_PATH, "%s/%s", cycle_dir, items[i]);
-            } else {
-                // For files, preserve the filename
-                snprintf(tasks[i].dest, MAX_PATH, "%s/%s", cycle_dir, items[i]);
-            }
+            // For both files and folders, use the base name for destination
+            snprintf(tasks[i].dest, MAX_PATH, "%s/%s", cycle_dir, items[i]);
             
             pthread_create(&threads[i], NULL, backup_thread, &tasks[i]);
         }

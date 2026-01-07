@@ -6,7 +6,8 @@
 
 1. **File Backup Support** 
    - Users can now add both files AND folders to backup
-   - Files are copied directly, folders are compressed as .zip
+   - **Both files and folders are compressed as .zip archives**
+   - Individual file compression for easy access
 
 2. **Terminal Status Monitoring**
    - System checks if the secondary log terminal is running
@@ -82,13 +83,13 @@
 - Updated: `play_sound()` - Better sound selection
 
 ### scheduler.c
-- Modified: `backup_thread()` - Handles both files and folders differently
+- Modified: `backup_thread()` - Compresses both files and folders
 - Added delays to prevent sound overlap
 - Better timing for sound feedback
 
 ### copy_engine.c
-- New function: `copy_file()` - Copies individual files
-- Existing: `compress_folder()` - Compresses folders
+- New function: `compress_file()` - Compresses individual files as .zip
+- Existing: `compress_folder()` - Compresses folders with recursion
 - Added error suppression (`2>/dev/null`)
 
 ---
@@ -111,23 +112,33 @@ make
 ### Backup Process:
 
 1. **Folders**: 
-   - Compressed using `zip -rq`
+   - Compressed using `zip -rq` (recursive, quiet)
    - Saved as `folder_name.zip`
    - Excludes nested `backups/` folders
+   - Preserves directory structure inside zip
 
 2. **Files**: 
-   - Copied directly using `cp`
-   - Preserves original filename
-   - No compression applied
+   - Compressed using `zip -q` (quiet)
+   - Saved as `filename.zip` (e.g., `report.pdf` → `report.pdf.zip`)
+   - Single file in each archive
+   - Easy to extract and access
 
 ### Directory Structure:
 ```
 ~/backups/
   └── 2026-01-08_14-30-00/
       ├── Documents.zip      (folder → compressed)
-      ├── report.pdf         (file → copied)
+      ├── report.pdf.zip     (file → compressed)
+      ├── notes.txt.zip      (file → compressed)
       └── Photos.zip         (folder → compressed)
 ```
+
+### Why Everything is Zipped?
+- **Consistency**: All backups are in the same format
+- **Space Saving**: Compression reduces storage usage
+- **Integrity**: Zip format includes checksums
+- **Portability**: Easy to transfer and archive
+- **Organization**: Timestamped folders keep everything organized
 
 ---
 
@@ -149,6 +160,7 @@ make
 2. **Sound overlap**: Added delays and changed idle sound
 3. **Unclear removal**: Now shows all items with types before asking for index
 4. **Mixed sorting**: Items now properly sorted (folders first, then files)
+5. **Files not compressed**: Fixed - now all items are zipped
 
 ---
 
@@ -158,6 +170,7 @@ make
    - Use browse mode to see visual indicators (📁/📄)
    - Press `m` for manual path entry
    - Navigate pages with `n`/`b`
+   - Both files and folders will be compressed as .zip
 
 2. **Removing Items**:
    - Check current items in Settings (Option 4) first
@@ -172,6 +185,19 @@ make
    - Add important files individually for quick access
    - Add entire folders for bulk backup
    - Check settings regularly to verify backup list
+   - All backups are compressed for space efficiency
+
+5. **Extracting Backups**:
+   ```bash
+   # Extract a file backup
+   unzip report.pdf.zip
+   
+   # Extract a folder backup
+   unzip Documents.zip
+   
+   # View contents without extracting
+   unzip -l Documents.zip
+   ```
 
 ---
 
@@ -182,20 +208,46 @@ make
 - Automatic exclusion of `backups/*` to prevent recursion
 - Thread-safe operations with mutex locks
 - Real-time logging to secondary terminal
+- **All items (files and folders) are compressed as .zip archives**
+- Compression is done in parallel using multiple threads
 
 ---
 
 ## 🔮 Future Enhancements (Potential)
 
+- Compression level options (fast/normal/maximum)
+- Encrypted zip archives with password protection
 - Incremental backups (only changed files)
-- Compression options for files
 - Backup scheduling (specific times)
 - Email notifications on completion
 - Web interface for remote monitoring
 - Backup integrity verification
+- Deduplication for repeated files
 
 ---
 
-**Version**: 2.0  
+## ⚙️ Compression Details
+
+### For Folders:
+```bash
+zip -rq 'destination.zip' 'source_folder' -x "backups/*"
+```
+- `-r`: Recursive (includes all subdirectories)
+- `-q`: Quiet mode (no output)
+- `-x`: Exclude pattern (prevents backing up the backups folder)
+
+### For Files:
+```bash
+zip -q 'destination.zip' 'source_file'
+```
+- `-q`: Quiet mode (no output)
+- Single file compression
+
+Both commands redirect errors to `/dev/null` to keep the log clean.
+
+---
+
+**Version**: 2.1  
 **Last Updated**: January 2026  
-**Platform**: Ubuntu/Linux (POSIX-compliant)
+**Platform**: Ubuntu/Linux (POSIX-compliant)  
+**Compression**: GNU zip utility required
