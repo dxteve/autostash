@@ -1,35 +1,29 @@
-# Define the compiler and flags
 CC = gcc
-# -Wall -Wextra: Show all warnings
-# -g: Include debug symbols
-# -I.: Look for headers in the current directory
-CFLAGS = -Wall -Wextra -g -I.
-LDFLAGS = -lpthread
-
-# Define the executable name
+CFLAGS = -pthread -Wall -Wextra
 TARGET = autostash
+OBJS = main.o ui.o scheduler.o copy_engine.o utilities.o
 
-# List all source and object files
-SRCS = main.c utilities.c copy_engine.c ui.c scheduler.c
-OBJS = $(SRCS:.c=.o)
-# List all headers so we can track changes to them
-DEPS = config.h utilities.h copy_engine.h ui.h scheduler.h
-
-# Default target: builds the executable
 all: $(TARGET)
 
-# Rule to link the object files into the final executable
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-# Rule to compile each C source file into an object file
-# It now also depends on $(DEPS) so changing a header triggers a rebuild
-%.o: %.c $(DEPS)
-	$(CC) $(CFLAGS) -c $< -o $@
+main.o: main.c config.h scheduler.h ui.h
+	$(CC) $(CFLAGS) -c main.c
 
-# Target to clean up generated files
+ui.o: ui.c config.h ui.h
+	$(CC) $(CFLAGS) -c ui.c
+
+scheduler.o: scheduler.c config.h scheduler.h ui.h copy_engine.h utilities.h
+	$(CC) $(CFLAGS) -c scheduler.c
+
+copy_engine.o: copy_engine.c config.h copy_engine.h
+	$(CC) $(CFLAGS) -c copy_engine.c
+
+utilities.o: utilities.c config.h utilities.h
+	$(CC) $(CFLAGS) -c utilities.c
+
 clean:
 	rm -f $(OBJS) $(TARGET)
 
-# Phony targets prevent conflicts with files named 'all' or 'clean'
 .PHONY: all clean
